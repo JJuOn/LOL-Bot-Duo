@@ -5,8 +5,8 @@ import os
 import time
 import json
 
-headers={"X-Riot-Token":API_KEY}
-tiers=['DIAMOND','PLATINUM','GOLD','SILVER','BRONZE','IRON']
+# tiers=['DIAMOND','PLATINUM','GOLD','SILVER','BRONZE','IRON']
+tiers=['DIAMOND','PLATINUM']
 divisions=['I','II','III','IV']
 
 def league_challenger():
@@ -66,7 +66,7 @@ def league_other(tier,division):
     responseSize=0
     isContinue=True
     while isContinue:
-        response=requests.get(URL,headers=headers)
+        response=requests.get(URL+'?page={}',headers=headers)
         while response.status_code!=200:
             time.sleep(5)
             response=requests.get(URL+'?page={}'.format(page),headers=headers)
@@ -88,14 +88,20 @@ def league_other(tier,division):
         df.to_csv('./data/league/{}_{}.csv'.format(tier,division),encoding='utf-8-sig')
         print('Done: {}_{}_{} ({})'.format(tier,division,page,len(users)))
         page+=1
-            
-            
 
+def deleteDuplicate():
+    files=os.listdir('./data/league')
+    for file in files:
+        df=pd.read_csv('./data/league/'+file,index_col=0)
+        df=df.drop_duplicates(df.columns.tolist(),keep="first")
+        df.reset_index(drop=True,inplace=True)
+        df.to_csv('./data/league/'+file,encoding='utf-8-sig')            
 
 if __name__=="__main__":
-    #league_challenger()
-    #league_grandmaster()
-    #league_master()
+    league_challenger()
+    league_grandmaster()
+    league_master()
     for tier in tiers:
         for division in divisions:
             league_other(tier,division)
+    deleteDuplicate()
