@@ -81,9 +81,10 @@ def summoner_other():
             summonerIds=df['summonerId'].tolist()
             URL="https://kr.api.riotgames.com/lol/summoner/v4/summoners"
             for i,summonerId in enumerate(summonerIds):
+                if file=="PLATINUM_IV.csv" and i<51425:
+                    continue
                 response=requests.get(URL+'/{}'.format(summonerId),headers=headers)
                 while response.status_code!=200:
-                    print(response.status_code)
                     time.sleep(5)
                     response=requests.get(URL+'/{}'.format(summonerId),headers=headers)
                 result=json.loads(response.text)
@@ -99,8 +100,17 @@ def summoner_other():
                 df2.to_csv('./data/summoner/{}'.format(file),encoding='utf-8-sig')
                 print('{}: ({}/{})'.format(file.split('.')[0],i+1,len(summonerIds)))
 
+def deleteDuplicate():
+    files=os.listdir('./data/summoner')
+    for file in files:
+        df=pd.read_csv('./data/summoner/'+file,index_col=0)
+        df=df.drop_duplicates(df.columns.tolist(),keep="first")
+        df.reset_index(drop=True,inplace=True)
+        df.to_csv('./data/summoner/'+file,encoding='utf-8-sig')   
+
 if __name__=="__main__":
-    #summoner_challenger()
-    #summoner_grandmaster()
-    #summoner_master()
+    summoner_challenger()
+    summoner_grandmaster()
+    summoner_master()
     summoner_other()
+    deleteDuplicate()
