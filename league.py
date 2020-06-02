@@ -4,9 +4,9 @@ import requests
 import os
 import time
 import json
+from module import check_path_and_mkdir
 
-# tiers=['DIAMOND','PLATINUM','GOLD','SILVER','BRONZE','IRON']
-tiers=['DIAMOND','PLATINUM']
+tiers=['DIAMOND']
 divisions=['I','II','III','IV']
 
 def league_challenger():
@@ -16,10 +16,7 @@ def league_challenger():
         time.sleep(5)
         response=requests.get(URL,headers=headers)
     users=json.loads(response.text)
-    if not os.path.exists('./data'):
-        os.mkdir('./data')
-    if not os.path.exists('./data/league'):
-        os.mkdir('./data/league')
+    check_path_and_mkdir('./data/league')
     df=pd.DataFrame(columns=list(users['entries'][0].keys()))
     for user in users['entries']:
         df=df.append(user,ignore_index=True)
@@ -33,10 +30,7 @@ def league_grandmaster():
         time.sleep(5)
         response=requests.get(URL,headers=headers)
     users=json.loads(response.text)
-    if not os.path.exists('./data'):
-        os.mkdir('./data')
-    if not os.path.exists('./data/league'):
-        os.mkdir('./data/league')
+    check_path_and_mkdir('./data/league')
     df=pd.DataFrame(columns=list(users['entries'][0].keys()))
     for user in users['entries']:
         df=df.append(user,ignore_index=True)
@@ -50,10 +44,7 @@ def league_master():
         time.sleep(5)
         response=requests.get(URL,headers=headers)
     users=json.loads(response.text)
-    if not os.path.exists('./data'):
-        os.mkdir('./data')
-    if not os.path.exists('./data/league'):
-        os.mkdir('./data/league')
+    check_path_and_mkdir('./data/league')
     df=pd.DataFrame(columns=list(users['entries'][0].keys()))
     for user in users['entries']:
         df=df.append(user,ignore_index=True)
@@ -75,10 +66,7 @@ def league_other(tier,division):
             responseSize=len(users)
         if len(users)<responseSize:
             isContinue=False
-        if not os.path.exists('./data'):
-            os.mkdir('./data')
-        if not os.path.exists('./data/league'):
-            os.mkdir('./data/league')
+        check_path_and_mkdir('./data/league')
         if os.path.exists('./data/league/{}_{}.csv'.format(tier,division)):
             df=pd.read_csv('./data/league/{}_{}.csv'.format(tier,division),index_col=0)
         else:

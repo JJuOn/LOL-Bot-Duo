@@ -4,6 +4,7 @@ import requests
 import os
 import time
 import json
+from module import check_path_and_mkdir, read_log, write_log
 
 def matchlist():
     files=os.listdir('./data/summoner')
@@ -12,9 +13,7 @@ def matchlist():
         accountIds=df['accountId'].tolist()
         for i,accountId in enumerate(accountIds):
             if os.path.exists('./log/match/list/{}'.format(file)):
-                logFile=open('./log/match/list/{}'.format(file),'r')
-                logIndex=int(logFile.readline())
-                logFile.close()
+                logIndex=read_log('./log/match/list/{}'.format(file))
                 if i<logIndex:
                     #print('{}:{} skipped'.format(file,i))
                     continue
@@ -23,10 +22,7 @@ def matchlist():
                 time.sleep(5)
                 response=requests.get('https://kr.api.riotgames.com/lol/match/v4/matchlists/by-account/{}?queue=420&season={}'.format(accountId,SEASON),headers=headers)
             results=json.loads(response.text)
-            if not os.path.exists('./data/match'):
-                os.mkdir('./data/match')
-            if not os.path.exists('./data/match/list'):
-                os.mkdir('./data/match/list')
+            check_path_and_mkdir('./data/match/list')
             if os.path.exists('./data/match/list/{}'.format(file)):
                 df2=pd.read_csv('./data/match/list/{}'.format(file),index_col=0)
             else:
@@ -36,15 +32,8 @@ def matchlist():
             df2=df2.drop_duplicates(df2.columns.tolist(),keep='first')
             df2.reset_index(drop=True,inplace=True)
             df2.to_csv('./data/match/list/{}'.format(file),encoding='utf-8-sig')
-            if not os.path.exists('./log'):
-                os.mkdir('./log')
-            if not os.path.exists('./log/match'):
-                os.mkdir('./log/match')
-            if not os.path.exists('./log/match/list'):
-                os.mkdir('./log/match/list')
-            logFile=open('./log/match/list/{}'.format(file),'w')
-            logFile.write(str(i+1))
-            logFile.close()
+            check_path_and_mkdir('./log/match/list')
+            write_log('./log/match/list/{}'.format(file),i+1)
             print('{}: ({}/{})'.format(file.split('.')[0],i+1,len(accountIds)))
 
 def matches():
@@ -55,9 +44,7 @@ def matches():
         gameIds=df['gameId'].tolist()
         for idx,gameId in enumerate(gameIds):
             if os.path.exists('./log/match/game/{}'.format(file)):
-                logFile=open('./log/match/game/{}'.format(file),'r')
-                logIndex=int(logFile.readline())
-                logFile.close()
+                logIndex=read_log('./log/match/game/{}'.format(file))
                 if idx<logIndex:
                     #print('{}:{} skipped'.format(file,i))
                     continue
@@ -75,24 +62,14 @@ def matches():
                     os.mkdir('./log/match')
                 if not os.path.exists('./log/match/game'):
                     os.mkdir('./log/match/game')
-                logFile=open('./log/match/game/{}'.format(file),'w')
-                logFile.write(str(idx+1))
-                logFile.close()
+                write_log('./log/match/game/{}'.format(file),idx+1)
                 #print('SKIP: Old Version!!')
                 break
             if not VERSION in result['gameVersion']:
-                if not os.path.exists('./log'):
-                    os.mkdir('./log')
-                if not os.path.exists('./log/match'):
-                    os.mkdir('./log/match')
-                if not os.path.exists('./log/match/game'):
-                    os.mkdir('./log/match/game')
-                logFile=open('./log/match/game/{}'.format(file),'w')
-                logFile.write(str(idx+1))
-                logFile.close()
+                check_path_and_mkdir('./log/match/game')
+                write_log('./log/match/game/{}'.format(file),idx+1)
                 continue
-            if not os.path.exists('./data/match/game'):
-                os.mkdir('./data/match/game')
+            check_path_and_mkdir('./data/match/game')
             if os.path.exists('./data/match/game/{}'.format(file)):
                 df2=pd.read_csv('./data/match/game/{}'.format(file),index_col=0)
             else:
@@ -135,26 +112,12 @@ def matches():
                 if 'AD_championId' in list(team['2'].keys()):
                     df2=df2.append(team['2'],ignore_index=True)
                 df2.to_csv('./data/match/game/{}'.format(file),encoding='utf-8-sig')
-                if not os.path.exists('./log'):
-                    os.mkdir('./log')
-                if not os.path.exists('./log/match'):
-                    os.mkdir('./log/match')
-                if not os.path.exists('./log/match/game'):
-                    os.mkdir('./log/match/game')
-                logFile=open('./log/match/game/{}'.format(file),'w')
-                logFile.write(str(idx+1))
-                logFile.close()
+                check_path_and_mkdir('./log/match/game')
+                write_log('./log/match/game/{}'.format(file),idx+1)
                 print('{}: ({}/{})'.format(file.split('.')[0],idx+1,len(gameIds)))
             except KeyError:
-                if not os.path.exists('./log'):
-                    os.mkdir('./log')
-                if not os.path.exists('./log/match'):
-                    os.mkdir('./log/match')
-                if not os.path.exists('./log/match/game'):
-                    os.mkdir('./log/match/game')
-                logFile=open('./log/match/game/{}'.format(file),'w')
-                logFile.write(str(idx+1))
-                logFile.close()
+                check_path_and_mkdir('./log/match/game')
+                write_log('./log/match/game/{}'.format(file),idx+1)
                 continue
         
 if __name__=="__main__":
